@@ -31,8 +31,20 @@ if selected_field != "--Select field--":
         if not matching_jobs.empty:
             for _, row in matching_jobs.iterrows():
                 st.subheader(f"🔧 Skills for: {row['Job Title']} in {row['Field']}")
-                st.markdown(f"**Technical Skills:** {row['Technical skills']}")
-                st.markdown(f"**General Skills:** {row['General Skills']}")
+
+                # Display Technical Skills as a bullet-point list
+                st.markdown("**🛠️ Technical Skills:**")
+                tech_skills = [skill.strip() for skill in str(row['Technical skills']).split(',')]
+                for skill in tech_skills:
+                    st.markdown(f"- {skill}")
+
+                # Display General Skills as a bullet-point list
+                st.markdown("**💡 General Skills:**")
+                general_skills = [skill.strip() for skill in str(row['General Skills']).split(',')]
+                for skill in general_skills:
+                    st.markdown(f"- {skill}")
+
                 st.markdown("---")
         else:
             st.warning("❌ No matching job found for this field and job title combination.")
+

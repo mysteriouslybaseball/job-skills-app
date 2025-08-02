@@ -19,7 +19,7 @@ def load_program_skills():
 job_df = load_job_data()
 program_df = load_program_skills()
 
-st.title("🔍 Job Skills Finder + Program Comparison")
+st.title("🔍 Job Skills Finder")
 
 # Step 1: Select field
 fields = job_df['Field'].dropna().unique().tolist()

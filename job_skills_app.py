@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import io
 
 # --- Load data functions ---
 @st.cache_data
@@ -18,7 +19,7 @@ def load_program_skills():
 job_df = load_job_data()
 program_df = load_program_skills()
 
-st.title("🔍 Job Skills Finder + Program Comparison")
+st.title("🔍 Job Skills Finder")
 
 # Step 1: Select field
 fields = job_df['Field'].dropna().unique().tolist()
@@ -49,10 +50,12 @@ if selected_field != "--Select field--":
                 general_skills = [skill.strip().lower() for skill in str(row['General Skills']).split(',')]
                 all_required_skills = set(tech_skills + general_skills)
 
-                # Display job skills
                 st.markdown("**🛠️ Technical Skills:**")
                 for skill in tech_skills:
                     st.markdown(f"- {skill.title()}")
+
+                st.markdown("")
+
                 st.markdown("**💡 General Skills:**")
                 for skill in general_skills:
                     st.markdown(f"- {skill.title()}")
@@ -65,32 +68,50 @@ if selected_field != "--Select field--":
 
                     # Compare
                     matched = all_required_skills & program_skills_set
-                    missing = all_required_skills - program_skills_set
                     extra = program_skills_set - all_required_skills
 
                     st.markdown("✅ **Matching Skills:**")
-                    if matched:
-                        for skill in sorted(matched):
-                            st.markdown(f"- {skill.title()}")
-                    else:
-                        st.write("_None_")
-
-                    st.markdown("❌ **Missing Skills (Required but not taught):**")
-                    if missing:
-                        for skill in sorted(missing):
-                            st.markdown(f"- {skill.title()}")
-                    else:
-                        st.write("_None_")
-
+                    for skill in sorted(matched):
+                        st.markdown(f"- {skill.title()}")
+                    
                     st.markdown("➕ **Extra Skills (Taught but not required):**")
-                    if extra:
-                        for skill in sorted(extra):
-                            st.markdown(f"- {skill.title()}")
-                    else:
-                        st.write("_None_")
+                    for skill in sorted(extra):
+                        st.markdown(f"- {skill.title()}")
+
+                    # ✅ Build the downloadable report
+                    report = io.StringIO()
+                    report.write(f"Job Skills Report\n")
+                    report.write(f"=================\n")
+                    report.write(f"Field: {selected_field}\n")
+                    report.write(f"Job Title: {selected_job}\n")
+                    report.write(f"Program Unit: {selected_program}\n\n")
+
+                    report.write("Required Technical Skills:\n")
+                    for skill in tech_skills:
+                        report.write(f"- {skill.title()}\n")
+                    report.write("\nRequired General Skills:\n")
+                    for skill in general_skills:
+                        report.write(f"- {skill.title()}\n")
+
+                    report.write("\nMatching Skills:\n")
+                    for skill in sorted(matched):
+                        report.write(f"- {skill.title()}\n")
+
+                    report.write("\nExtra Skills Taught by Program:\n")
+                    for skill in sorted(extra):
+                        report.write(f"- {skill.title()}\n")
+
+                    report_text = report.getvalue()
+                    st.download_button(
+                        label="📥 Download Report",
+                        data=report_text,
+                        file_name=f"{selected_job}_skills_report.txt",
+                        mime="text/plain"
+                    )
 
                 st.markdown("---")
         else:
             st.warning("❌ No matching job found for this field and job title combination.")
+
 
 
